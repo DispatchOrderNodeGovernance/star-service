@@ -4,6 +4,7 @@ import boto3
 import os
 import urllib.request
 import urllib.error
+import socket
 
 # Initialize DynamoDB resource
 dynamodb = boto3.resource('dynamodb')
@@ -89,6 +90,11 @@ def lambda_handler(event, context):
                         service_responses.append({
                             'status': 'error',
                             'error': str(e)
+                        })
+                    except socket.timeout:
+                        service_responses.append({
+                            'status': 'error',
+                            'error': 'The read operation timed out'
                         })
                 
                 all_responses.append({
