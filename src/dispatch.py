@@ -63,7 +63,9 @@ def lambda_handler(event, context):
                 payload = json.dumps({
                     'uuid': new_uuid,
                     'token': new_token,
-                    'contract_value': float(contract_value)
+                    'contract_value': float(contract_value),
+                    'action': 'request_for_quote',
+                    'dispatch_endpoint': os.environ['DISPATCH_ENDPOINT']
                 }).encode('utf-8')
                 
                 headers = {
