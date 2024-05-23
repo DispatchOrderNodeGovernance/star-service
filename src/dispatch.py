@@ -11,12 +11,13 @@ table_name = os.environ['CONTRACT_TEMPLATES_TABLE_NAME']
 table = dynamodb.Table(table_name)
 
 def lambda_handler(event, context):
-    # Parse the request
-    action = event.get('action')
+    # Parse the request body
+    body = json.loads(event.get('body', '{}'))
+    action = body.get('action')
     
     if action == 'dispatch':
-        # Extract stack_id from the request
-        stack_id = event.get('stack_id')
+        # Extract stack_id from the request body
+        stack_id = body.get('stack_id')
         
         if not stack_id:
             return {
