@@ -38,50 +38,49 @@ def lambda_handler(event, context):
             new_uuid = str(uuid.uuid4())
             new_token = str(uuid.uuid4())
             
-            # Extract contract values and service endpoints
-            contract_values = {
-                'ride_matching_service_contract_value': item.get('ride_matching_service_contract_value'),
-                'location_service_contract_value': item.get('location_service_contract_value'),
-                'notification_service_contract_value': item.get('notification_service_contract_value'),
-                'trip_management_service_contract_value': item.get('trip_management_service_contract_value')
-            }
+            # Extract contract values and endpoints
+            services = [
+                ('ride_matching_service', 'ride_matching_service_endpoints', 'ride_matching_service_contract_value'),
+                ('location_service', 'location_service_endpoints', 'location_service_contract_value'),
+                ('notification_service', 'notification_service_endpoints', 'notification_service_contract_value'),
+                ('trip_management_service', 'trip_management_service_endpoints', 'trip_management_service_contract_value')
+            ]
             
-            endpoints = {
-                'ride_matching_service_endpoints': item.get('ride_matching_service_endpoints'),
-                'location_service_endpoints': item.get('location_service_endpoints'),
-                'notification_service_endpoints': item.get('notification_service_endpoints'),
-                'trip_management_service_endpoints': item.get('trip_management_service_endpoints')
-            }
+            all_responses = []
             
-            if not all(contract_values.values()) or not all(endpoints.values()):
-                return {
-                    'statusCode': 500,
-                    'body': json.dumps('Missing contract values or endpoints in database item')
-                }
-            
-            # Prepare payloads and send requests
-            responses = []
-            for service, contract_value in contract_values.items():
-                endpoint_key = service.replace('contract_value', 'endpoints')
-                endpoint_list = endpoints.get(endpoint_key)
+            for service_name, endpoints_key, contract_value_key in services:
+                endpoints_csv = item.get(endpoints_key)
+                contract_value = item.get(contract_value_key)
                 
-                if endpoint_list:
-                    payload = {
-                        'uuid': new_uuid,
-                        'token': new_token,
-                        'contract_value': contract_value
-                    }
-                    
-                    for endpoint in endpoint_list:
-                        try:
-                            response = requests.post(endpoint, json=payload, timeout=0.1)
-                            responses.append({'service': service, 'status': response.status_code, 'response': response.text})
-                        except requests.exceptions.RequestException as e:
-                            responses.append({'service': service, 'status': 'error', 'error': str(e)})
+                if not endpoints_csv or contract_value is None:
+                    continue
+                
+                endpoints = [e.strip() for e in endpoints_csv.split(',')]
+                
+                # Prepare payload
+                payload = {
+                    'uuid': new_uuid,
+                    'token': new_token,
+                    'contract_value': contract_value
+                }
+                
+                # Send requests to each endpoint
+                service_responses = []
+                for endpoint in endpoints:
+                    try:
+                        response = requests.post(endpoint, json=payload, timeout=0.1)
+                        service_responses.append({'status': response.status_code, 'response': response.text})
+                    except requests.exceptions.RequestException as e:
+                        service_responses.append({'status': 'error', 'error': str(e)})
+                
+                all_responses.append({
+                    'service': service_name,
+                    'results': service_responses
+                })
             
             return {
                 'statusCode': 200,
-                'body': json.dumps({'results': responses})
+                'body': json.dumps({'results': all_responses})
             }
         
         except Exception as e:
