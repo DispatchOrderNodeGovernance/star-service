@@ -27,8 +27,11 @@ def lambda_handler(event, context):
         
         # Query the database for the given stack_id
         try:
-            response = table.get_item(Key={'id': stack_id})
-            item = response.get('Item')
+            response = table.query(
+                KeyConditionExpression=boto3.dynamodb.conditions.Key('id').eq(stack_id)
+            )
+            items = response.get('Items', [])
+            item = items[0] if items else None
             
             if not item:
                 return {
