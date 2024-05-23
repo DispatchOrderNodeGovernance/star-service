@@ -2,7 +2,8 @@ import json
 import uuid
 import boto3
 import os
-import requests
+import urllib.request
+import urllib.error
 
 # Initialize DynamoDB resource
 dynamodb = boto3.resource('dynamodb')
@@ -58,20 +59,31 @@ def lambda_handler(event, context):
                 endpoints = [e.strip() for e in endpoints_csv.split(',')]
                 
                 # Prepare payload
-                payload = {
+                payload = json.dumps({
                     'uuid': new_uuid,
                     'token': new_token,
                     'contract_value': contract_value
+                }).encode('utf-8')
+                
+                headers = {
+                    'Content-Type': 'application/json'
                 }
                 
                 # Send requests to each endpoint
                 service_responses = []
                 for endpoint in endpoints:
+                    request = urllib.request.Request(endpoint, data=payload, headers=headers, method='POST')
                     try:
-                        response = requests.post(endpoint, json=payload, timeout=0.1)
-                        service_responses.append({'status': response.status_code, 'response': response.text})
-                    except requests.exceptions.RequestException as e:
-                        service_responses.append({'status': 'error', 'error': str(e)})
+                        with urllib.request.urlopen(request, timeout=0.1) as response:
+                            service_responses.append({
+                                'status': response.getcode(),
+                                'response': response.read().decode('utf-8')
+                            })
+                    except urllib.error.URLError as e:
+                        service_responses.append({
+                            'status': 'error',
+                            'error': str(e)
+                        })
                 
                 all_responses.append({
                     'service': service_name,
