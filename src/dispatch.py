@@ -58,12 +58,15 @@ def lambda_handler(event, context):
                 all_endpoints_present = False
                 return {
                     'statusCode': 200,
-                    'body': json.dumps({})
+                    'body': json.dumps({
+                        'status': 'pending'
+                    })
                 }
         if all_endpoints_present:
             return {
                 'statusCode': 200,
                 'body': json.dumps({
+                    'status': 'complete',
                     'uuid': new_uuid,
                 })
             }
