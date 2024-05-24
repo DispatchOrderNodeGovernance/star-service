@@ -180,7 +180,6 @@ def lambda_handler(event, context):
                             'endpoints': endpoints,
                             'contract_value': float(contract_value),
                             'payload': payload,
-                            'error': e.read().decode('utf-8')
                         })
                     except urllib.error.URLError as e:
                         service_responses.append({
