@@ -19,21 +19,18 @@ def lambda_handler(event, context):
     if action == 'quote':
         new_uuid = body.get('uuid')
         token = body.get('token')
-        if 'location_service_endpoints' in body:
-            datum_name = 'location_service_endpoints'
-        if 'ride_matching_service_endpoints' in body:
-            datum_name = 'ride_matching_service_endpoints'
-        if 'notification_service_endpoints' in body:
-            datum_name = 'notification_service_endpoints'
-        if 'trip_management_service_endpoints' in body:
-            datum_name = 'trip_management_service_endpoints'
-
+        endpoint_types = ['location_service_endpoints', 'ride_matching_service_endpoints', 'notification_service_endpoints', 'trip_management_service_endpoints']
+        datum_name = None
+        for endpoint_type in endpoint_types:
+            if endpoint_type in body:
+                datum_name = endpoint_type
+                break
         if not datum_name:
             return {
                 'statusCode': 400,
                 'body': json.dumps('Invalid data')
             }
-        datum_content = json.dumps(body[datum_name])
+        datum_content = json.dumps(body.get(datum_name))
         #
         bid_file_path = f'/tmp/{new_uuid}/{datum_name}.json'
         with open(bid_file_path, 'r') as f:
@@ -50,14 +47,26 @@ def lambda_handler(event, context):
                     'body': json.dumps('Bid already has endpoints')
                 }
         bid_data['endpoints'] = datum_content
+        bid_data['contract_uuid'] = body.get('contract_uuid')
         with open(bid_file_path, 'w') as f:
             json.dump(bid_data, f)
         #
-        return {
-            'statusCode': 200,
-            'body': json.dumps({})
-        }
-
+        # Check if endpoint_types are all present in /tmp/
+        all_endpoints_present = True
+        for endpoint_type in endpoint_types:
+            if not os.path.exists(f'/tmp/{new_uuid}/{endpoint_type}.json'):
+                all_endpoints_present = False
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps({})
+                }
+        if all_endpoints_present:
+            return {
+                'statusCode': 200,
+                'body': json.dumps({
+                    'uuid': new_uuid,
+                })
+            }
     if action == 'dispatch':
         # Extract stack_id from the request body
         stack_id = body.get('stack_id')
