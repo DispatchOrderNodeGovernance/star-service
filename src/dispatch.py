@@ -192,6 +192,8 @@ def lambda_handler(event, context):
                         })
                 
                 all_responses.append({
+                    'contract_value': contract_value,
+                    'endpoints': endpoints,
                     'service': service_name,
                     'results': service_responses
                 })
