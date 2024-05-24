@@ -144,14 +144,15 @@ def lambda_handler(event, context):
                 endpoints = [e.strip() for e in endpoints_csv.split(',')]
                 new_token = str(uuid.uuid4())
                 
-                # Prepare payload
-                payload = json.dumps({
+                payload = {
                     'uuid': new_uuid,
                     'token': new_token,
                     'contract_value': float(contract_value),
                     'action': 'request_for_quote',
                     'dispatch_endpoint': os.environ['DISPATCH_ENDPOINT']
-                }).encode('utf-8')
+                }
+                # Prepare payload
+                data = json.dumps(payload).encode('utf-8')
 
                 with open(f'/tmp/{new_uuid}/{endpoints_key}.json', 'w') as f:
                     f.write(json.dumps({
@@ -167,7 +168,7 @@ def lambda_handler(event, context):
                 # Send requests to each endpoint
                 service_responses = []
                 for endpoint in endpoints:
-                    request = urllib.request.Request(endpoint, data=payload, headers=headers, method='POST')
+                    request = urllib.request.Request(endpoint, data=data, headers=headers, method='POST')
                     try:
                         with urllib.request.urlopen(request, timeout=2) as response:
                             service_responses.append({
