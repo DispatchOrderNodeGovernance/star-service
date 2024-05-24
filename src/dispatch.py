@@ -170,7 +170,7 @@ def lambda_handler(event, context):
                     except urllib.error.URLError as e:
                         service_responses.append({
                             'status': 'error',
-                            'error': e.__traceback__.tb_frame.f_globals
+                            'error': ''.join(traceback.format_exception(None, e, e.__traceback__))
                         })
                     except socket.timeout:
                         service_responses.append({
