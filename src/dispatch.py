@@ -173,7 +173,7 @@ def lambda_handler(event, context):
                             service_responses.append({
                                 'status': response.getcode(),
 #                                'response': response.read().decode('utf-8')
-                                'response': f"Response from {endpoint} with status code {response.getcode()}"
+                                'response': f"Response from {endpoint} with status code {response.getcode()} with response {response.read().decode('utf-8')}"
                             })
                     except urllib.error.HTTPError as e:
                         service_responses.append({
