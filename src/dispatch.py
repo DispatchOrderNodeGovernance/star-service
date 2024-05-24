@@ -95,7 +95,12 @@ def lambda_handler(event, context):
                 }
             
             # Generate new UUID and token
-            new_uuid = str(uuid.uuid4())
+            new_uuid = body.get('uuid')
+            if not new_uuid:
+                return {
+                    'statusCode': 400,
+                    'body': json.dumps('Missing uuid in request')
+                }
             
             # Extract contract values and endpoints
             services = [
@@ -108,6 +113,11 @@ def lambda_handler(event, context):
             all_responses = []
             
             dispatch_token = str(uuid.uuid4())
+            if os.path.exists(f'/tmp/{new_uuid}.json'):
+                return {
+                    'statusCode': 400,
+                    'body': json.dumps('UUID already exists')
+                }
             with open(f'/tmp/{new_uuid}.json', 'w') as f:
                 f.write(json.dumps({
                     'uuid': new_uuid,
