@@ -18,6 +18,13 @@ def lambda_handler(event, context):
     action = body.get('action')
     
     if action == 'quote':
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "status": "success",
+                "quote": 1000
+            })
+        }
         new_uuid = body.get('uuid')
         token = body.get('token')
         endpoint_types = ['location_service_endpoints', 'ride_matching_service_endpoints', 'notification_service_endpoints', 'trip_management_service_endpoints']
