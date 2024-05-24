@@ -172,13 +172,12 @@ def lambda_handler(event, context):
                         with urllib.request.urlopen(request, timeout=2) as response:
                             service_responses.append({
                                 'status': response.getcode(),
-#                                'response': response.read().decode('utf-8')
                                 'response': f"Response from {endpoint} with status code {response.getcode()} with response {response.read().decode('utf-8')}"
                             })
                     except urllib.error.HTTPError as e:
                         service_responses.append({
                             'status': e.code,
-                            'error': e.read().decode('utf-8')
+                            'error': response.read().decode('utf-8')
                         })
                     except urllib.error.URLError as e:
                         service_responses.append({
