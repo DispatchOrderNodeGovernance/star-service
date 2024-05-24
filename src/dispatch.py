@@ -5,6 +5,7 @@ import os
 import urllib.request
 import urllib.error
 import socket
+import traceback
 
 # Initialize DynamoDB resource
 dynamodb = boto3.resource('dynamodb')
@@ -190,7 +191,7 @@ def lambda_handler(event, context):
         except Exception as e:
             return {
                 'statusCode': 500,
-                'body': json.dumps(f'Error querying database: {json.dumps(e.__traceback__.tb_frame.f_globals)}')
+                'body': json.dumps(f'Error querying database: {traceback.format_exception(None, e, e.__traceback__)}')
             }
     
     return {
