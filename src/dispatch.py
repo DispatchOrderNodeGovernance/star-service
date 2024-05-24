@@ -177,7 +177,7 @@ def lambda_handler(event, context):
                     except urllib.error.HTTPError as e:
                         service_responses.append({
                             'status': e.code,
-                            'error': f'HTTPError: {e.code}'
+                            'error': f'HTTPError: {e.code} from {endpoint} with payload {payload}'
                         })
                     except urllib.error.URLError as e:
                         service_responses.append({
