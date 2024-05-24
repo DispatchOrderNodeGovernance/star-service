@@ -191,7 +191,7 @@ def lambda_handler(event, context):
         except Exception as e:
             return {
                 'statusCode': 500,
-                'body': json.dumps(f'Error querying database: {''.join(traceback.format_exception(None, e, e.__traceback__))}')
+                'body': json.dumps(''.join(traceback.format_exception(None, e, e.__traceback__)))
             }
     
     return {
